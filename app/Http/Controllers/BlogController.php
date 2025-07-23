@@ -2,54 +2,222 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Blog;
+use App\Models\Kategori;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use App\Models\BlogView;
 
 class BlogController extends Controller
 {
-    public function index()
-    {
-        $blogs = Blog::orderBy('created_at', 'desc')->get();
-        return view('blog.index', compact('blogs'));
-    }
+    // Tampilkan semua blog
+   public function index(Request $request)
+{
+    $kategoriSlug = $request->kategori;
+    $search = $request->search;
 
+    $blog = Blog::with('kategori')
+        ->when($kategoriSlug, function ($query, $kategoriSlug) {
+            $query->whereHas('kategori', function ($q) use ($kategoriSlug) {
+                $q->where('name', $kategoriSlug);
+            });
+        })
+        ->when($search, function ($query, $search) {
+            $query->where('judul', 'like', "%{$search}%")
+                  ->orWhere('konten', 'like', "%{$search}%");
+        })
+        ->latest()
+        ->paginate(9); // biar bisa pakai pagination
+
+    return view('blog.index', compact('blog', 'kategoriSlug', 'search'));
+}
+
+
+
+    // Form create blog
     public function create()
-    {
-        return view('blog.create');
-    }
+{
+    $kategori = Kategori::all(); // Ambil semua kategori
+    return view('blog.create', compact('kategori'));
+}
 
+    // Simpan blog baru
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required',
-            'penulis' => 'required',
-            'konten' => 'required',
+            'judul' => 'required|string|max:255',
+            'penulis' => 'required|string|max:100',
+            'konten' => 'required|string',
+            'kategori_id' => 'required|exists:kategori,id',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
         ]);
 
-        Blog::create($request->all());
+        $data = $request->only(['judul', 'penulis', 'konten', 'kategori_id', ]);
+        $data['dibuat_oleh'] = Auth::id();
 
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('blog', 'public');
+        }
+
+        Blog::create($data);
+
+        
         return redirect()->route('blog.index')->with('success', 'Blog berhasil ditambahkan.');
     }
 
+    // Tampilkan detail blog
+      public function show($id)
+{
+    $blog = Blog::findOrFail($id);
+ $ipAddress = request()->ip();
+
+    // If it's a new view, create a new row in product_views table
+    $view = \App\Models\BlogView::firstOrCreate(
+        ['blog_id' => $blog->id, 'ip_address' => $ipAddress],
+        ['viewed_at' => now()]
+    );
+
+    // If it's a new view (or updated), increment view count (optional, but good for total views)
+    // You might want to add a 'views_count' column to your blog table
+    // For now, we'll just count from product_views table
+
+    $blogViewsCount = \App\Models\BlogView::where('blog_id', $blog->id)->count();
+
+    return view('blog.show', compact('blog', 'blogViewsCount'));
+}
+
+    // Form edit blog
     public function edit($id)
+{
+    $blog = Blog::findOrFail($id);
+    $kategori = Kategori::all(); // Tambahkan ini bro
+
+    return view('blog.edit', compact('blog', 'kategori'));
+}
+
+
+
+
+    // Update blog
+    public function update(Request $request, Blog $blog)
     {
-        $blog = Blog::findOrFail($id);
-        return view('blog.edit', compact('blog'));
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'penulis' => 'required|string|max:100',
+            'konten' => 'required|string',
+            'kategori_id' => 'required|exists:kategori,id',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $data = $request->only(['judul', 'penulis', 'konten', 'kategori_id']);
+
+        if ($request->hasFile('foto')) {
+            // hapus foto lama jika ada
+            if ($blog->foto && Storage::disk('public')->exists($blog->foto)) {
+                Storage::disk('public')->delete($blog->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('blog', 'public');
+        }
+
+        $blog->update($data);
+
+        return redirect()->route('blog.index')->with('success', 'Blog berhasil diperbarui.');
     }
 
-    public function update(Request $request, $id)
+    // Hapus blog
+    public function destroy(Blog $blog)
     {
-        $blog = Blog::findOrFail($id);
-        $blog->update($request->all());
+        if ($blog->foto && Storage::disk('public')->exists($blog->foto)) {
+            Storage::disk('public')->delete($blog->foto);
+        }
 
-        return redirect()->route('blog.index')->with('success', 'Blog berhasil diupdate.');
-    }
-
-    public function destroy($id)
-    {
-        $blog = Blog::findOrFail($id);
         $blog->delete();
-
         return redirect()->route('blog.index')->with('success', 'Blog berhasil dihapus.');
+    }
+
+    // Method untuk halaman kategori teknologi
+    public function teknologi()
+    {
+        $blog = Blog::with('kategori')
+            ->whereHas('kategori', function ($q) {
+                $q->where('name', 'teknologi');
+            })
+            ->latest()
+            ->paginate(9);
+        
+        $kategori = 'Teknologi';
+        return view('home.teknologi', compact('blog', 'kategori'));
+    }
+
+    // Method untuk halaman kategori sport
+    public function sport()
+    {
+        $blog = Blog::with('kategori')
+            ->whereHas('kategori', function ($q) {
+                $q->where('name', 'sport');
+            })
+            ->latest()
+            ->paginate(9);
+        
+        $kategori = 'Sport';
+        return view('home.sport', compact('blog', 'kategori'));
+    }
+
+    // Method untuk halaman kategori otomotif
+    public function otomotif()
+    {
+        $blog = Blog::with('kategori')
+            ->whereHas('kategori', function ($q) {
+                $q->where('name', 'otomotif');
+            })
+            ->latest()
+            ->paginate(9);
+        
+        $kategori = 'Otomotif';
+        return view('home.otomotif', compact('blog', 'kategori'));
+    }
+
+    // Method untuk halaman kategori politik
+    public function politik()
+    {
+        $blog = Blog::with('kategori')
+            ->whereHas('kategori', function ($q) {
+                $q->where('name', 'politik');
+            })
+            ->latest()
+            ->paginate(9);
+        
+        $kategori = 'Politik';
+        return view('home.politik', compact('blog', 'kategori'));
+    }
+
+    // Method untuk halaman kategori hiburan
+    public function hiburan()
+    {
+        $blog = Blog::with('kategori')
+            ->whereHas('kategori', function ($q) {
+                $q->where('nama', 'hiburan');
+            })
+            ->latest()
+            ->paginate(9);
+        
+        $kategori = 'Hiburan';
+        return view('home.hiburan', compact('blog', 'kategori'));
+    }
+
+    // Method untuk halaman kategori trending
+    public function trending()
+    {
+        $blog = Blog::with('kategori')
+            ->whereHas('kategori', function ($q) {
+                $q->where('name', 'trending');
+            })
+            ->latest()
+            ->paginate(9);
+        
+        $kategori = 'Trending';
+        return view('home.trending', compact('blog', 'kategori'));
     }
 }

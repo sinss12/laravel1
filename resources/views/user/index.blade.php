@@ -5,11 +5,11 @@
 @section('content')
 <div class="container mt-4">
     <div class="card shadow">
-        <div class="card-header d-flex justify-content-between align-items-center bg-black text-white">
-            <a href="{{ url('/user') }}" class="nav-link d-flex align-items-center">
-                <i class="typcn typcn-group menu-icon me-2"></i>
-                <span class="menu-title">User</span>
-            </a>
+        <div class="card-header d-flex justify-content-between align-items-center bg-black text-dark">
+            <div class="d-flex align-items-center">
+                <i class="typcn typcn-group menu-icon mr-2"></i>
+                <h5 class="mb-0">Manajemen User</h5>
+            </div>
 
             <div class="col-sm-6">
                 <div class="d-flex align-items-center justify-content-md-end">
@@ -28,18 +28,13 @@
                     <div class="pr-1 mb-3 mr-2 mb-xl-0">
                         <button type="button" class="btn btn-sm bg-white btn-icon-text border"><i class="typcn typcn-arrow-forward-outline mr-2"></i>Export</button>
                     </div>
-
                     <a href="{{ url('/user/create') }}" class="btn btn-info btn-sm">
                         ＋ Tambah User
                     </a>
-
-
                 </div>
             </div>
-
-
-
         </div>
+
         <div class="card-body">
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -67,7 +62,6 @@
                             <td class="text-center">{{ $loop->iteration }}</td>
                             <td class="text-center">{{ $user->name }}</td>
                             <td class="text-center">{{ $user->email }}</td>
-
                             <td class="text-center">{{ $user->jenis_kelamin ?? '-' }}</td>
                             <td class="text-center">
                                 @if(!empty($user->foto))
@@ -78,15 +72,13 @@
                             </td>
                             <td class="text-center">{{ $user->alamat ?? '-' }}</td>
                             <td class="text-center">
-                                <span class="badge ">{{ $user->created_at->format('d M Y') }}</span>
+                                <span class="badge">{{ $user->created_at->format('d M Y') }}</span>
                             </td>
                             <td class="text-center actions-cell" style="white-space: nowrap;">
                                 <a href="{{ url('/user/' . $user->id . '/edit') }}" class="btn btn-sm btn-success">
                                     <i class="typcn typcn-edit"></i> Edit
                                 </a>
-                                <form action="{{ url('/user/' . $user->id) }}" method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus user ini?')"
-                                    style="display:inline-block; margin-left: 1rem; margin-bottom: 0;">
+                                <form action="{{ url('/user/' . $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus user ini?')" style="display:inline-block; margin-left: 1rem; margin-bottom: 0;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">
@@ -94,8 +86,6 @@
                                     </button>
                                 </form>
                             </td>
-
-
                         </tr>
                         @empty
                         <tr>
@@ -105,10 +95,8 @@
                     </tbody>
                 </table>
             </div>
-
         </div>
     </div>
-</div>
 </div>
 @include('layout._partials.footer')
 @endsection

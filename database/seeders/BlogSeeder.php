@@ -15,7 +15,7 @@ class BlogSeeder extends Seeder
     {
         DB::table('blog')->truncate();
 /*************  ✨ Windsurf Command 🌟  *************/
-        \DB::table('blog')->insert([
+        DB::table('blog')->insert([
             [
                 'title' => 'First Blog Post',
                 'content' => 'This is the content of the first blog post.',

@@ -1,4 +1,3 @@
-
 @extends('layout.app')
 
 @section('content')
@@ -9,20 +8,22 @@
         </div>
         <div class="card-body">
             @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $err)
-                            <li>{{ $err }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
             @endif
 
-            <form action="{{ route('blog.update', $blog->id) }}" method="POST">
+            {{-- INI YANG DIGANTI --}}
+            <form action="{{ route('blog.update', $blog->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 @include('blog.form')
             </form>
+
         </div>
     </div>
 </div>
