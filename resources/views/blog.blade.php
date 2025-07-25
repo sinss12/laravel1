@@ -53,7 +53,7 @@
     </div>
 
     <div class="row">
-        @forelse ($blogs as $blog)
+        @forelse ($blog as $blog)
         <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
             <div class="card blog-card border-0 shadow-sm rounded-4 w-100">
                 <div class="blog-image-wrapper">

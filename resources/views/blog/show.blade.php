@@ -235,14 +235,7 @@
             <a class="navbar-brand" href="{{ route('blog.index') }}">
                 <i class="bi bi-journal-text me-2"></i>BlogSans
             </a>
-            <div class="ms-auto">
-                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                    @csrf
-                    <button class="btn btn-outline-light" type="submit">
-                        <i class="bi bi-box-arrow-right me-1"></i> Logout
-                    </button>
-                </form>
-            </div>
+           
         </div>
     </nav>
 
@@ -274,7 +267,7 @@
                     <div class="col-md-6">
                         <div class="meta-item">
                             <i class="bi bi-tag"></i>
-                            <span>Kategori: {{ $blog->kategori->nama ?? 'Umum' }}</span>
+                            <span>Kategori: {{ $blog->kategori->name ?? 'Umum' }}</span>
                         </div>
                         <div class="meta-item">
                             <i class="bi bi-calendar3"></i>

@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beranda Blog</title>
+    <title>Hasil Pencarian - BlogSans</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(to right, #f3f4f6, #e5e7eb);
-            /* abu soft elegan */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
@@ -65,7 +65,6 @@
             transform: scale(1.08);
         }
 
-
         .badge-kategori {
             background-color: #f0f0f0;
             color: #555;
@@ -82,12 +81,6 @@
 
         .btn-outline-primary {
             border-radius: 50px;
-        }
-
-        .navbar .btn-outline-light:hover {
-            background-color: #e0e0e0;
-            color: #000;
-            border-color: #e0e0e0;
         }
     </style>
 </head>
@@ -114,7 +107,12 @@
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <!-- Kiri: Home + Filter -->
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex align-items-center">
-
+                        <!-- Home -->
+                        <li class="nav-item me-2">
+                            <a class="nav-link btn btn-outline-light" href="{{ route('blog.index') }}">
+                                <i class="bi bi-house-door me-1"></i> Home
+                            </a>
+                        </li>
 
                         <!-- Filter Dropdown -->
                         <li class="nav-item dropdown">
@@ -140,97 +138,75 @@
                     </ul>
 
                     <!-- Kanan: Pencarian -->
-                    <form action="{{ route('blog.search') }}" method="GET" class="d-flex ms-auto" id="searchForm">
+                    <form action="{{ route('blog.search') }}" method="GET" class="d-flex ms-auto">
                         <input type="text" name="search" class="form-control me-2"
                             placeholder="Cari artikel atau kategori..." value="{{ request('search') }}">
-                        <button type="submit" class="btn btn-outline-light">
-                            <i class="bi bi-search text-white"></i>
-                        </button>
+                        <button type="submit" class="btn btn-outline-light">Cari</button>
                     </form>
                 </div>
             </div>
         </nav>
 
-        <!-- Hero Section -->
-        <section class="hero text-center py-5">
-            <div class="container">
-                <h1 class="display-5 fw-bold">Selamat Datang di Blog Kami</h1>
-                <p class="lead">Temukan berbagai artikel menarik dan inspiratif setiap harinya!</p>
-            </div>
-        </section>
+    <!-- Hero untuk hasil pencarian -->
+    <section class="hero text-center py-5">
+        <div class="container">
+            <h1 class="display-5 fw-bold">Hasil Pencarian</h1>
+            <p class="lead">Menampilkan artikel untuk: <strong>{{ request('search') }}</strong></p>
+        </div>
+    </section>
 
-        <!-- Blog Section -->
-        <div class="container py-5">
-            @if(request('search'))
-            <p class="mb-3">Hasil pencarian untuk: <strong>{{ request('search') }}</strong></p>
-            @endif
-
-            <div class="row">
-                @forelse ($blog as $item)
-                {{-- CARD BLOG KAMU --}}
-                <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
-                    <div class="card blog-card border-0 shadow-sm rounded-4 w-100">
-                        <div class="blog-image-wrapper">
-                            <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->judul }}">
+    <!-- Blog Result Section -->
+    <div class="container py-5">
+        @if($blog->count())
+        <div class="row">
+            @foreach ($blog as $item)
+            <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch">
+                <div class="card blog-card border-0 shadow-sm rounded-4 w-100">
+                    <div class="blog-image-wrapper">
+                        <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->judul }}">
+                    </div>
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge-kategori">
+                                <i class="typcn typcn-tag me-1"></i> {{ $item->kategori->nama ?? 'Umum' }}
+                            </span>
+                            <small class="text-muted">
+                                <i class="typcn typcn-time"></i> {{ $item->created_at->format('d M Y') }}
+                            </small>
                         </div>
-                        <div class="card-body d-flex flex-column p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge-kategori">
-                                    <i class="typcn typcn-tag me-1"></i> {{ $item->kategori->name ?? 'Umum' }}
-                                </span>
-                                <small class="text-muted">
-                                    <i class="typcn typcn-time"></i> {{ $item->created_at->format('d M Y') }}
-                                </small>
-                            </div>
-                            <h5 class="card-title fw-bold text-dark">{{ Str::limit($item->judul, 50) }}</h5>
-                            <p class="card-text text-muted flex-grow-1">
-                                {{ Str::limit(strip_tags($item->konten), 100) }}
-                            </p>
-                            <a href="{{ route('blog.show', $item->id) }}" class="btn btn-sm btn-outline-primary mt-3">
-                                Baca Selengkapnya →
-                            </a>
-                        </div>
+                        <h5 class="card-title fw-bold text-dark">{{ Str::limit($item->judul, 50) }}</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            {{ Str::limit(strip_tags($item->konten), 100) }}
+                        </p>
+                        <a href="{{ route('blog.show', $item->id) }}" class="btn btn-sm btn-outline-primary mt-3">
+                            Baca Selengkapnya →
+                        </a>
                     </div>
                 </div>
-                @empty
-                <div class="col-12 text-center">
-                    <p class="text-muted">Tidak ada artikel yang ditemukan.</p>
-                </div>
-                @endforelse
             </div>
-
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center mt-4">
-                {{ $blog->appends(request()->input())->links('pagination::bootstrap-4') }}
-            </div>
+            @endforeach
         </div>
+        @else
+        <div class="col-12 text-center">
+            <p class="text-muted">Tidak ditemukan artikel dengan kata kunci <strong>"{{ request('search') }}"</strong>.</p>
+        </div>
+        @endif
 
-        <!-- Footer -->
-        <footer class="text-center py-3 mt-auto">
-            <div class="container">
-                &copy; {{ date('Y') }} MyBlog. All rights reserved.
-            </div>
-        </footer>
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-4">
+            {{ $blog->appends(request()->input())->links('pagination::bootstrap-4') }}
+        </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/typicons/2.0.9/typicons.min.css">
+    <!-- Footer -->
+    <footer class="text-center py-3 mt-auto">
+        <div class="container">
+            &copy; {{ date('Y') }} MyBlog. All rights reserved.
+        </div>
+    </footer>
 
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const searchForm = document.getElementById('searchForm');
-                searchForm.addEventListener('submit', function(e) {
-                    const searchInput = searchForm.querySelector('input[name="search"]');
-                    if (searchInput.value.trim() === '') {
-                        e.preventDefault();
-
-                    }
-                });
-            });
-        </script>
-
-    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/typicons/2.0.9/typicons.min.css">
+</body>
 
 </html>

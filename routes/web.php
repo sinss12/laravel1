@@ -13,9 +13,7 @@ use App\Http\Controllers\KategoriController;
 
 
 // Dashboard
-Route::get('/dashboard', function () {
-    return view('dashboard');
-});
+Route::get('/dashboard', [App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
 
 // Manajemen User
 Route::resource('user', UserController::class)->names([
@@ -53,7 +51,7 @@ Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('k
 Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
 
 // Route utama blog
-Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index')->middleware('log.visitor');
 
 
 // TAMBAHIN ROUTES BARU INI:
@@ -73,6 +71,7 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 // Setelah login
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('blog.index');
+Route::get('search', [BlogController::class, 'search'])->name('blog.search');
+Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('blog.index')->middleware('log.visitor');
 
 
